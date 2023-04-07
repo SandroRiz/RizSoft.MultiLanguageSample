@@ -1,0 +1,35 @@
+﻿
+@inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
+@if (cultures != null)
+{
+    <select @bind="CurrentLanguage">
+        @foreach (var culture in cultures)
+        {
+            <option value="@culture.Key">@culture.Value</option>
+        }
+    </select>
+    <button class="mx-1 p-1 btn btn-primary" @onclick="ChangeLanguage">Change</button>
+}
+@code {
+    private string selectedCulture = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
+ 
+    private Dictionary<string, string> cultures;
+    public string CurrentLanguage { get; set; } = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
+
+    protected override void OnInitialized()
+    {
+        cultures = Configuration.GetSection("Cultures").GetChildren().ToDictionary(x => x.Key, x => x.Value);
+    }
+
+    protected void ChangeLanguage()
+    {
+        var uri = new Uri(NavigationManager.Uri)
+            .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+
+        var query = $"?culture={Uri.EscapeDataString(CurrentLanguage)}&redirectUri={Uri.EscapeDataString(uri)}";
+        NavigationManager.NavigateTo("/Culture/SetCulture" + query, forceLoad: true);
+    }
+
+   
+}
